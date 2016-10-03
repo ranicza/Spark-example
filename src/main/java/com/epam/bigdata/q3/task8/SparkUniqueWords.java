@@ -19,25 +19,33 @@ import java.lang.Iterable;
 
 public class SparkUniqueWords {
 	private static final Pattern SPACE = Pattern.compile(" ");
+	private static final String INPUT = "hdfs://sandbox.hortonworks.com:8020/tmp/admin/stream.20130607-ak.txt";
+	private static final String OUTPUT = "hdfs://sandbox.hortonworks.com:8020/tmp/admin/out.txt";
 
 	  public static void main(String[] args) throws Exception {
-		String inputFile = args[0];
-	    String outputFile = args[1];
+//		String inputFile = args[0];
+//	    String outputFile = args[1];
+		  
+			String inputFile = INPUT;
+		    String outputFile = OUTPUT;
+		  
 	    
 	    if (args.length < 1) {
-	      System.err.println("Usage: file <file>");
+	      System.err.println("Usage: file <file_input>  <file_output>");
 	      System.exit(1);
 	    }
 
-	    // Create a Java Spark Context.
-	    SparkConf conf = new SparkConf().setAppName("uniqueWords");
-			JavaSparkContext sc = new JavaSparkContext(conf);
-		
-		 // Load our input data.
-		 JavaRDD<String> input = sc.textFile(inputFile);
-		 
+	    SparkConf conf = new SparkConf().setMaster("local[8]").setAppName("uniqueWords");
+	    JavaSparkContext sc = new JavaSparkContext(conf);
+	    JavaRDD<String> lines = sc.textFile(inputFile);
+	    lines.cache();
+	    
+	    
+	    
+	    
+
 		 //Get separate params from row
-		 JavaRDD<String> params = input.flatMap(new FlatMapFunction<String, String>() {
+		 JavaRDD<String> params = lines.flatMap(new FlatMapFunction<String, String>() {
 		      @Override
 		      public Iterator<String> call(String s) {
 		    	  System.out.println(Arrays.asList(SPACE.split(s)).iterator());
@@ -45,6 +53,13 @@ public class SparkUniqueWords {
 		      }
 		   });
 		 
+//		 PairFunction<String, String, String> keyData= new PairFunction<String, String, String>() {
+//			    @Override
+//			    public Tuple2<String, String> call(String x) throws Exception {
+//			        return new Tuple2(x.split(" ")[0], x.split("")[2]);
+//			    }
+//			};
+			
 		    // Transform into word and count.
 		    JavaPairRDD<String, Integer> counts = params.mapToPair(
 		      new PairFunction<String, String, Integer>(){
