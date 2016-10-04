@@ -7,8 +7,10 @@ import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Encoders;
 import org.apache.spark.sql.SparkSession;
 import org.apache.spark.api.java.function.Function;
+import org.apache.spark.api.java.function.Function2;
 import org.apache.spark.api.java.function.PairFunction;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -81,14 +83,42 @@ public class SparkUniqueWords {
 
 //        Encoder<ULogEntity> encoder = Encoders.bean(ULogEntity.class);
 //        Dataset<ULogEntity> df = spark.createDataset(logsRdd.rdd(), encoder);
-        
-        
+               
         Dataset<Row> df = spark.createDataFrame(logsRdd, ULogEntity.class);
         df.createOrReplaceTempView("logs");
         df.show();
         df.limit(50).show();
 
+
+        JavaPairRDD<DateCity, List<String>> dateCityTags = logsRdd.mapToPair(new PairFunction<ULogEntity, DateCity, List<String>>() {
+            @Override
+            public Tuple2<DateCity, List<String>> call(ULogEntity entity) {
+                DateCity dc = new DateCity(entity.getCity(), entity.getTimestampDate());
+                return new Tuple2<DateCity, List<String>>(dc, entity.getTags());
+            }
+        });
         
+        JavaPairRDD<DateCity, List<String>> dayCityTagsPairs = dateCityTags.reduceByKey(new Function2<List<String>, List<String>, List<String>>() {
+            @Override
+            public List<String> call(List<String> i1, List<String> i2) {
+                List<String> a1 = new ArrayList<>(i1);
+                List<String> a2 = new ArrayList<>(i2);
+
+                a1.removeAll(a2);
+                a1.addAll(a2);
+                return a1;
+            }
+        });
+        
+        
+        List<Tuple2<DateCity, List<String>>> output = dayCityTagsPairs.collect();
+        System.out.println("UNIQUE KEYWORDS - DATE/CITY");
+        for (Tuple2<DateCity, List<String>> tuple : output) {
+            System.out.println("CITY : " + tuple._1().getCity() + " DATE: " + tuple._1().getDate() + " TAGS: ");
+            for (String tag : tuple._2()) {
+                System.out.print(tag + " ");
+            }
+        }
         
         spark.stop();
 	  }
