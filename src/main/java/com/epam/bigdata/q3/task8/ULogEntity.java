@@ -5,37 +5,37 @@ import java.util.Date;
 
 public class ULogEntity implements Serializable{
 
-	private static final long serialVersionUID = 1L;
-
-	private int  IDUserTags;
+	private long  IDUserTags;
 	
-	private int IDCity;
+	private long IDCity;
 	
 	private Date tmsDate;
 
 	public ULogEntity() {
 	}
 
-	public ULogEntity(int iDUserTags, int iDCity, Date tmsDate) {
+
+	public ULogEntity(long iDUserTags, long iDCity, Date tmsDate) {
 		super();
 		IDUserTags = iDUserTags;
 		IDCity = iDCity;
 		this.tmsDate = tmsDate;
 	}
 
-	public int getIDUserTags() {
+
+	public long getIDUserTags() {
 		return IDUserTags;
 	}
 
-	public void setIDUserTags(int iDUserTags) {
+	public void setIDUserTags(long iDUserTags) {
 		IDUserTags = iDUserTags;
 	}
 
-	public int getIDCity() {
+	public long getIDCity() {
 		return IDCity;
 	}
 
-	public void setIDCity(int iDCity) {
+	public void setIDCity(long iDCity) {
 		IDCity = iDCity;
 	}
 
@@ -48,41 +48,9 @@ public class ULogEntity implements Serializable{
 	}
 
 	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + IDCity;
-		result = prime * result + IDUserTags;
-		result = prime * result + ((tmsDate == null) ? 0 : tmsDate.hashCode());
-		return result;
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		ULogEntity other = (ULogEntity) obj;
-		if (IDCity != other.IDCity)
-			return false;
-		if (IDUserTags != other.IDUserTags)
-			return false;
-		if (tmsDate == null) {
-			if (other.tmsDate != null)
-				return false;
-		} else if (!tmsDate.equals(other.tmsDate))
-			return false;
-		return true;
-	}
-
-	@Override
 	public String toString() {
 		return "ULogEntity [IDUserTags=" + IDUserTags + ", IDCity=" + IDCity + ", tmsDate=" + tmsDate + "]";
 	}
 
-	
 	
 }

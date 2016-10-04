@@ -62,10 +62,10 @@ public class SparkUniqueWords {
                 String[] parts = line.split(SPLIT);
                 String strDate = parts[1].substring(0,8);
                 Date date = formatter.parse(strDate);
-                return new ULogEntity(Integer.parseInt(parts[parts.length-2]), Integer.parseInt(parts[parts.length-15]), date);
+                return new ULogEntity(Long.parseLong(parts[parts.length-2]), Long.parseLong(parts[parts.length-15]), date);
             }
         });
-        
+
         Encoder<ULogEntity> encoder = Encoders.bean(ULogEntity.class);
 
         Dataset<ULogEntity> df = spark.createDataset(logs.rdd(), encoder);
