@@ -28,7 +28,7 @@ public class SparkUniqueWords {
 	    String tagFile = args[1];
 	    String cityFile = args[2];
 
-	    if (args.length < 1) {
+	    if (args.length < 2) {
 	      System.err.println("Usage: file <file_input>  <file_output>");
 	      System.exit(1);
 	    }    
@@ -38,16 +38,17 @@ public class SparkUniqueWords {
 	    	      .appName("SparkUniqueWords")
 	    	      .getOrCreate();
 
-        //GET TAG_ID + LIST OF TAGS
+        //GET TAG_ID + LIST OF TAGS	    
         JavaRDD<String> tagsRdd = spark.read().textFile(tagFile).javaRDD();
-        JavaPairRDD<Long, List<String>> tagsIdsPairs = tagsRdd.mapToPair(new PairFunction<String, Long, List<String>>() {
+        tagsRdd.filter(x -> !x.contains("ID"));
+        JavaPairRDD<Long, List<String>> tagsPairs = tagsRdd.mapToPair(new PairFunction<String, Long, List<String>>() {
             public Tuple2<Long, List<String>> call(String line) {
                 String[] parts = line.split(SPLIT);
+                
                 return new Tuple2<Long, List<String>>(Long.parseLong(parts[0]), Arrays.asList(parts[1].split(",")));
             }
         });
-        Map<Long, List<String>> tagsMap = tagsIdsPairs.collectAsMap();
-        
+        Map<Long, List<String>> tagsMap = tagsPairs.collectAsMap();
         
       //GET CITIES
         JavaRDD<String> citiesRDD = spark.read().textFile(cityFile).javaRDD();
