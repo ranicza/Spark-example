@@ -31,8 +31,8 @@ public class SparkUniqueWords {
 	
 	
 	//private static final Pattern SPACE = Pattern.compile(" ");
-	private static final String INPUT = "hdfs://sandbox.hortonworks.com:8020/tmp/admin/stream.20130607-ak.txt";
-	private static final String OUTPUT = "hdfs://sandbox.hortonworks.com:8020/tmp/admin/out1.txt";
+	//private static final String INPUT = "hdfs://sandbox.hortonworks.com:8020/tmp/admin/stream.20130607-ak.txt";
+	//private static final String OUTPUT = "hdfs://sandbox.hortonworks.com:8020/tmp/admin/out1.txt";
 	
 	//private static final String TAB = "\\t";
 

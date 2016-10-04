@@ -78,6 +78,11 @@ public class ULogEntity implements Serializable{
 		return true;
 	}
 
+	@Override
+	public String toString() {
+		return "ULogEntity [IDUserTags=" + IDUserTags + ", IDCity=" + IDCity + ", tmsDate=" + tmsDate + "]";
+	}
+
 	
 	
 }
