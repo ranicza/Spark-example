@@ -87,7 +87,7 @@ public class SparkUniqueWords {
         Dataset<Row> df = spark.createDataFrame(logsRdd, ULogEntity.class);
         df.createOrReplaceTempView("logs");
         df.show();
-        df.limit(50).show();
+        df.limit(15).show();
 
 
         JavaPairRDD<DateCity, List<String>> dateCityTags = logsRdd.mapToPair(new PairFunction<ULogEntity, DateCity, List<String>>() {

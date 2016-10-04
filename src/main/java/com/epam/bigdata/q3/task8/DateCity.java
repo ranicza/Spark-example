@@ -8,9 +8,9 @@ public class DateCity implements Serializable{
     private String city;
     
     
-	public DateCity() {
-		super();
-	}
+//	public DateCity() {
+//		super();
+//	}
 
 
 	public DateCity(String date, String city) {
