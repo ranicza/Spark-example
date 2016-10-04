@@ -9,19 +9,17 @@ public class ULogEntity implements Serializable{
 	
 	private long IDCity;
 	
-	private Date tmsDate;
+	private String timestampDate;
 
 	public ULogEntity() {
 	}
 
-
-	public ULogEntity(long iDUserTags, long iDCity, Date tmsDate) {
+	public ULogEntity(long iDUserTags, long iDCity, String timestampDate) {
 		super();
 		IDUserTags = iDUserTags;
 		IDCity = iDCity;
-		this.tmsDate = tmsDate;
+		this.timestampDate = timestampDate;
 	}
-
 
 	public long getIDUserTags() {
 		return IDUserTags;
@@ -39,18 +37,20 @@ public class ULogEntity implements Serializable{
 		IDCity = iDCity;
 	}
 
-	public Date getTmsDate() {
-		return tmsDate;
+	public String getTimestampDate() {
+		return timestampDate;
 	}
 
-	public void setTmsDate(Date tmsDate) {
-		this.tmsDate = tmsDate;
+	public void setTimestampDate(String timestampDate) {
+		this.timestampDate = timestampDate;
 	}
 
 	@Override
 	public String toString() {
-		return "ULogEntity [IDUserTags=" + IDUserTags + ", IDCity=" + IDCity + ", tmsDate=" + tmsDate + "]";
+		return "ULogEntity [IDUserTags=" + IDUserTags + ", IDCity=" + IDCity + ", timestampDate=" + timestampDate + "]";
 	}
+
+
 
 	
 }
