@@ -33,8 +33,8 @@ public class SparkUniqueWords {
 	 
 	
 	public static void main(String[] args) throws Exception {
-		String inputFile = args[0];
-	    String outputFile = args[1];
+//		String inputFile = args[0];
+//	    String outputFile = args[1];
 
 	    if (args.length < 1) {
 	      System.err.println("Usage: file <file_input>  <file_output>");
