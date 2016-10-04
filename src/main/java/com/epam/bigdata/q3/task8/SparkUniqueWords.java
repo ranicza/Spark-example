@@ -1,25 +1,32 @@
 package com.epam.bigdata.q3.task8;
 
+import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Encoders;
 import org.apache.spark.sql.SparkSession;
 import org.apache.spark.api.java.function.Function;
+import org.apache.spark.api.java.function.PairFunction;
 
+import java.util.Arrays;
 import java.util.Date;
-
+import java.util.List;
+import java.util.Map;
 import java.text.SimpleDateFormat;
 import org.apache.spark.sql.Encoder;
-
+import scala.Tuple2;
+import scala.Tuple3;
+import org.apache.spark.sql.Row;
 
 public class SparkUniqueWords {
 	private static final String SPLIT = "\\s+";
 	private static final String FORMAT = "yyyyMMdd";
 	
 	public static void main(String[] args) throws Exception {
-		String inputFile = args[0];
-	   // String outputFile = args[1];
+		String logFile = args[0];
+	    String tagFile = args[1];
+	    String cityFile = args[2];
 
 	    if (args.length < 1) {
 	      System.err.println("Usage: file <file_input>  <file_output>");
@@ -31,20 +38,50 @@ public class SparkUniqueWords {
 	    	      .appName("SparkUniqueWords")
 	    	      .getOrCreate();
 
-        JavaRDD<ULogEntity> logs = spark.read().textFile(inputFile).javaRDD().map(new Function<String, ULogEntity>() {
+        //GET TAG_ID + LIST OF TAGS
+        JavaRDD<String> tagsRdd = spark.read().textFile(tagFile).javaRDD();
+        JavaPairRDD<Long, List<String>> tagsIdsPairs = tagsRdd.mapToPair(new PairFunction<String, Long, List<String>>() {
+            public Tuple2<Long, List<String>> call(String line) {
+                String[] parts = line.split(SPLIT);
+                return new Tuple2<Long, List<String>>(Long.parseLong(parts[0]), Arrays.asList(parts[1].split(",")));
+            }
+        });
+        Map<Long, List<String>> tagsMap = tagsIdsPairs.collectAsMap();
+        
+        
+      //GET CITIES
+        JavaRDD<String> citiesRDD = spark.read().textFile(cityFile).javaRDD();
+        JavaPairRDD<Integer, String> citiesIdsPairs = citiesRDD.mapToPair(new PairFunction<String, Integer, String>() {
+            public Tuple2<Integer, String> call(String line) {
+                String[] parts = line.split(SPLIT);
+                return new Tuple2<Integer, String>(Integer.parseInt(parts[0]), parts[1]);
+            }
+        });
+        Map<Integer, String> citiesMap = citiesIdsPairs.collectAsMap();
+        
+        
+        JavaRDD<ULogEntity> logsRdd = spark.read().textFile(logFile).javaRDD().map(new Function<String, ULogEntity>() {
             @Override
             public ULogEntity call(String line) throws Exception {                
                 String[] parts = line.split(SPLIT);
+                
+                List<String> tags = tagsMap.get(Long.parseLong(parts[parts.length-2]));
+                String city = citiesMap.get(Long.parseLong(parts[parts.length-15]));
                 String date = parts[1].substring(0,8);             
-                return new ULogEntity(Long.parseLong(parts[parts.length-2]), Long.parseLong(parts[parts.length-15]), date);
+                return new ULogEntity(Long.parseLong(parts[parts.length-2]), Long.parseLong(parts[parts.length-15]), date, tags, city);
             }
         });
 
-        Encoder<ULogEntity> encoder = Encoders.bean(ULogEntity.class);
+//        Encoder<ULogEntity> encoder = Encoders.bean(ULogEntity.class);
+//        Dataset<ULogEntity> df = spark.createDataset(logsRdd.rdd(), encoder);
+        
+        
+        Dataset<Row> df = spark.createDataFrame(logsRdd, ULogEntity.class);
+        df.createOrReplaceTempView("logs");
+        df.show();
+        df.limit(15).show();
 
-        Dataset<ULogEntity> df = spark.createDataset(logs.rdd(), encoder);
-
-        df.limit(10).show();
+        
         
         spark.stop();
 	  }
