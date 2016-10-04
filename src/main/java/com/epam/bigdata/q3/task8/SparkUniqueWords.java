@@ -46,15 +46,16 @@ public class SparkUniqueWords {
        // tagsRdd.filter(x -> !x.contains("ID"));
         JavaPairRDD<Long, List<String>> tagsPairs = tagsRdd.mapToPair(new PairFunction<String, Long, List<String>>() {
             public Tuple2<Long, List<String>> call(String line) {
-                String[] parts = line.split(SPLIT);
-                
+                String[] parts = line.split(SPLIT);             
                 return new Tuple2<Long, List<String>>(Long.parseLong(parts[0]), Arrays.asList(parts[1].split(",")));
             }
         });
         Map<Long, List<String>> tagsMap = tagsPairs.collectAsMap();
         
       //GET CITIES
-        JavaRDD<String> citiesRDD = spark.read().textFile(cityFile).javaRDD();
+        Dataset<String> cityData = spark.read().textFile(cityFile);
+        String cityHeader = cityData.first();       
+        JavaRDD<String> citiesRDD = cityData.filter(x -> !x.equals(cityHeader)).javaRDD();
         JavaPairRDD<Integer, String> citiesIdsPairs = citiesRDD.mapToPair(new PairFunction<String, Integer, String>() {
             public Tuple2<Integer, String> call(String line) {
                 String[] parts = line.split(SPLIT);
