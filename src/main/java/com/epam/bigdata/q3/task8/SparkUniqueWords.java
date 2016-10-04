@@ -38,12 +38,12 @@ public class SparkUniqueWords {
 	    	      .appName("SparkUniqueWords")
 	    	      .getOrCreate();
 
-        //GET TAG_ID + LIST OF TAGS	    
+        //GET TAG_ID + LIST OF TAGS	  
+	    // skip header from the file
         Dataset<String> data = spark.read().textFile(tagFile);
         String header = data.first();
         JavaRDD<String> tagsRdd =data.filter(x -> !x.equals(header)).javaRDD();
 
-       // tagsRdd.filter(x -> !x.contains("ID"));
         JavaPairRDD<Long, List<String>> tagsPairs = tagsRdd.mapToPair(new PairFunction<String, Long, List<String>>() {
             public Tuple2<Long, List<String>> call(String line) {
                 String[] parts = line.split(SPLIT);             
@@ -53,9 +53,11 @@ public class SparkUniqueWords {
         Map<Long, List<String>> tagsMap = tagsPairs.collectAsMap();
         
       //GET CITIES
+        // skip header from the file
         Dataset<String> cityData = spark.read().textFile(cityFile);
         String cityHeader = cityData.first();       
         JavaRDD<String> citiesRDD = cityData.filter(x -> !x.equals(cityHeader)).javaRDD();
+        
         JavaPairRDD<Integer, String> citiesIdsPairs = citiesRDD.mapToPair(new PairFunction<String, Integer, String>() {
             public Tuple2<Integer, String> call(String line) {
                 String[] parts = line.split(SPLIT);
@@ -84,7 +86,7 @@ public class SparkUniqueWords {
         Dataset<Row> df = spark.createDataFrame(logsRdd, ULogEntity.class);
         df.createOrReplaceTempView("logs");
         df.show();
-        df.limit(15).show();
+        df.limit(50).show();
 
         
         
