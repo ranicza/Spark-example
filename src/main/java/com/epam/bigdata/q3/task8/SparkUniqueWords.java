@@ -98,11 +98,21 @@ public class SparkUniqueWords {
             }
         });
         
-        JavaPairRDD<DateCity, List<String>> dayCityTagsPairs = dateCityTags.reduceByKey(new Function2<List<String>, List<String>, List<String>>() {
+        System.out.println(dateCityTags.toString());
+        /*
+         * 	reduceByKey(Function2<V,V,V> func)
+		 *	Merge the values for each key using an associative reduce function.
+		 *  This will also perform the merging locally on each mapper before sending
+		 *  results to a reducer, similarly to a "combiner" in MapReduce.
+		 *  Output will be hash-partitioned with the existing partitioner/ parallelism level.
+         */
+        JavaPairRDD<DateCity, List<String>> dayCityTagsPairs = dateCityTags.reduceByKey(new Function2<List<String>, List<String>, List<String>>() {       	
             @Override
             public List<String> call(List<String> i1, List<String> i2) {
+                System.out.println("one: " + i1.size());
+                System.out.println("two: " + i2.size());
                 List<String> a1 = new ArrayList<>(i1);
-                List<String> a2 = new ArrayList<>(i2);
+                List<String> a2 = new ArrayList<>(i2); //!
 
                 a1.removeAll(a2);
                 a1.addAll(a2);
@@ -110,9 +120,10 @@ public class SparkUniqueWords {
             }
         });
         
+        System.out.println(dayCityTagsPairs.toString());
         
         List<Tuple2<DateCity, List<String>>> output = dayCityTagsPairs.collect();
-        System.out.println("UNIQUE KEYWORDS - DATE/CITY");
+        System.out.println("UNIQUE KEYWORDS PER DATE/CITY");
         for (Tuple2<DateCity, List<String>> tuple : output) {
             System.out.println("CITY : " + tuple._1().getCity() + " DATE: " + tuple._1().getDate() + " TAGS: ");
             for (String tag : tuple._2()) {
