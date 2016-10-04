@@ -93,7 +93,7 @@ public class SparkUniqueWords {
         JavaPairRDD<DateCity, List<String>> dateCityTags = logsRdd.mapToPair(new PairFunction<ULogEntity, DateCity, List<String>>() {
             @Override
             public Tuple2<DateCity, List<String>> call(ULogEntity entity) {
-                DateCity dc = new DateCity(entity.getCity(), entity.getTimestampDate());
+                DateCity dc = new DateCity(entity.getTimestampDate(), entity.getCity());
                 return new Tuple2<DateCity, List<String>>(dc, entity.getTags());
             }
         });
