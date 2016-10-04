@@ -1,9 +1,12 @@
 package com.epam.bigdata.q3.task8;
 
+import java.io.Serializable;
 import java.util.Date;
 
-public class ULogEntity {
-	
+public class ULogEntity implements Serializable{
+
+	private static final long serialVersionUID = 1L;
+
 	private int  IDUserTags;
 	
 	private int IDCity;
@@ -11,6 +14,13 @@ public class ULogEntity {
 	private Date tmsDate;
 
 	public ULogEntity() {
+	}
+
+	public ULogEntity(int iDUserTags, int iDCity, Date tmsDate) {
+		super();
+		IDUserTags = iDUserTags;
+		IDCity = iDCity;
+		this.tmsDate = tmsDate;
 	}
 
 	public int getIDUserTags() {
