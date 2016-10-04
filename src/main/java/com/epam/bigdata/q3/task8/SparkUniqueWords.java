@@ -55,7 +55,7 @@ public class SparkUniqueWords {
 	    	      .appName("SparkUniqueWords")
 	    	      .getOrCreate();
 
-        JavaRDD<ULogEntity> logs = spark.read().text(inputFile).javaRDD().map(new Function<String, ULogEntity>() {
+        JavaRDD<ULogEntity> logs = spark.read().textFile(inputFile).javaRDD().map(new Function<String, ULogEntity>() {
         	SimpleDateFormat formatter = new SimpleDateFormat(FORMAT);
             @Override
             public ULogEntity call(String line) throws Exception {
@@ -71,8 +71,6 @@ public class SparkUniqueWords {
         Dataset<ULogEntity> df = spark.createDataset(logs.rdd(), encoder);
 
         df.limit(10).show();
-        
-
 	  }
 
 	
