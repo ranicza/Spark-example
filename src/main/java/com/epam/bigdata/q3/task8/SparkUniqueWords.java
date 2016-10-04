@@ -39,8 +39,11 @@ public class SparkUniqueWords {
 	    	      .getOrCreate();
 
         //GET TAG_ID + LIST OF TAGS	    
-        JavaRDD<String> tagsRdd = spark.read().textFile(tagFile).javaRDD();
-        tagsRdd.filter(x -> !x.contains("ID"));
+        Dataset<String> data = spark.read().textFile(tagFile);
+        String header = data.first();
+        JavaRDD<String> tagsRdd =data.filter(x -> !x.equals(header)).javaRDD();
+
+       // tagsRdd.filter(x -> !x.contains("ID"));
         JavaPairRDD<Long, List<String>> tagsPairs = tagsRdd.mapToPair(new PairFunction<String, Long, List<String>>() {
             public Tuple2<Long, List<String>> call(String line) {
                 String[] parts = line.split(SPLIT);
