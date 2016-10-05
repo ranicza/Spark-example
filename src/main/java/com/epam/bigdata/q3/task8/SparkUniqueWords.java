@@ -38,8 +38,8 @@ import org.apache.spark.sql.Row;
 
 public class SparkUniqueWords {
 	private static final String SPLIT = "\\s+";
-	private static final String TOKEN = "EAACEdEose0cBANl9UjBZCtLXfPMNfQ9ZBR1GQkxJwUFZCZAfTYdhJjBBO4949WLAYZA5RlEWwYv9l4mrh0EYj9keY9NZBIbI10oqOkVwFD4bTZA2tnKwg2qTKcYYkaJFJtR0QIylWfYyamMkqkd21w24esdzPwVc44VtqiFhybZCq5M0YZAyapJV0";
-    private static final SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-mm-dd");
+	private static final String TOKEN = "EAACEdEose0cBAN9XZBgFmXOG8xyxYUCndQ9KZCZAZAycNMQCZC9VjaOZCuBC0s0cqsvCdsKhy83TB1YHVy5D59JjoJdgQZA6DlpVWtNa8its7orbOxDHTfIcf7wfYF1euErxq8bbXkYJtw3BNYg1hflELyN7P66zu6D9sVV7qOtztGWKaEGlIA5";
+	private static final SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-mm-dd");
     
     
 	public static void main(String[] args) throws Exception {
