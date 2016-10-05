@@ -126,10 +126,16 @@ public class SparkUniqueWords {
         JavaPairRDD<DateCityEntity, List<String>> dateCityTagsPairs = dateCityTags.reduceByKey(new Function2<List<String>, List<String>, List<String>>() {       	
             @Override
             public List<String> call(List<String> i1, List<String> i2) {
-                List<String> a1 = new ArrayList<>(i1);
-                List<String> a2 = new ArrayList<>(i2);               
-                a1.removeAll(a2);
-                a1.addAll(a2);
+            	List<String> a1 = null;
+            	if (i1 != null) {
+            		 a1 = new ArrayList<>(i1);
+            	}
+                if (i2 != null) {
+                    List<String> a2 = new ArrayList<>(i2);               
+                    a1.removeAll(a2);
+                    a1.addAll(a2);
+                }
+
                 return a1;
             }
         });
