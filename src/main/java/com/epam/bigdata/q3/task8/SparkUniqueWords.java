@@ -7,6 +7,7 @@ import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.SparkSession;
 
 import com.epam.bigdata.q3.task8.model.DateCityEntity;
+import com.epam.bigdata.q3.task8.model.DateCityTagEntity;
 import com.epam.bigdata.q3.task8.model.EventEntity;
 import com.epam.bigdata.q3.task8.model.TagEventsEntity;
 import com.epam.bigdata.q3.task8.model.ULogEntity;
@@ -28,10 +29,11 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import scala.Tuple2;
 import org.apache.spark.sql.Row;
@@ -148,26 +150,7 @@ public class SparkUniqueWords {
                 return set1;
             }
         });
-        
-//        JavaPairRDD<DateCityEntity, List<String>> dateCityTagsPairs = dateCityTags.reduceByKey(new Function2<List<String>, List<String>, List<String>>() {       	
-//            @Override
-//            public List<String> call(List<String> i1, List<String> i2) {
-//            	List<String> a1 = null;
-//            	if (i1 != null) {
-//            		 a1 = new ArrayList<>(i1);
-//            	}
-//                if (i2 != null) {
-//                    List<String> a2 = new ArrayList<>(i2);               
-//                    a1.removeAll(a2);
-//                    a1.addAll(a2);
-//                }
-//
-//                return a1;
-//            }
-//        });
-        
-        
-        
+
         List<Tuple2<DateCityEntity, Set<String>>> result = dateCityTagsPairs.collect();
         System.out.println("-----------------------UNIQUE KEYWORDS PER DATE/CITY----------------------------");
         for (Tuple2<DateCityEntity, Set<String>> tuple : result) {
@@ -184,14 +167,7 @@ public class SparkUniqueWords {
        /*
         *  Get a sequence of all unique tags from the file.
         *  flatMap(FlatMapFunction<T,U> f) 
-        */
-//        JavaRDD<String> uniqueTagsRdd = logsRdd.flatMap(new FlatMapFunction<ULogEntity, String>() {
-//			@Override
-//			public Iterator<String> call(ULogEntity log) throws Exception {
-//				return log.getTags().iterator();
-//			}      	
-//		}).distinct();
-       
+        */       
        JavaRDD<String> uniqueTagsRdd = logsRdd.flatMap(log -> 
        		log.getTags().iterator()
        ).distinct();
@@ -251,9 +227,50 @@ public class SparkUniqueWords {
         	tagEvents.getEvents().iterator()
         );
 
-
+        JavaPairRDD<DateCityTagEntity, EventEntity> dateCityTagsByPairs = allEventsRdd.mapToPair(eventEntity -> {
+        	DateCityTagEntity dctEntity = new DateCityTagEntity(eventEntity.getStartDate(), eventEntity.getCity(), eventEntity.getTag());
+        	 return new Tuple2<DateCityTagEntity, EventEntity>(dctEntity, eventEntity);
+        	}
+        );
+        
+        /*
+         * reduceByKey(Function2<V,V,V> func)
+         */        
+        JavaPairRDD<DateCityTagEntity, EventEntity> dctPairs2 = dateCityTagsByPairs.reduceByKey((event1, event2) -> {
+        	EventEntity eventEntity = new EventEntity();
+        	eventEntity.setAttendingCount(event1.getAttendingCount() + event2.getAttendingCount());
+			
+			Map<String, Integer> words1 = event1.getWords();
+			Map<String, Integer> words2 = event2.getWords();
+			for (String word : words2.keySet()) {
+				Integer num1 = words1.get(word);
+				Integer num2 = words2.get(word);			
+				//num1==null ? words1.put(word, num2) : words1.put(word, num1 + num2);				
+				if (num1 == null ) {
+					words1.put(word, num2);
+				} else {
+					 words1.put(word, num1 + num2);
+				}
+			}
+			eventEntity.setWords(words1);      	
+        	return eventEntity;
+        });
         
         
+        System.out.println("--------------------KEYWORD DAY CITY TOTAL_AMOUNT_OF_VISITORS TOKEN_MAP(KEYWORD_1, AMOUNT_1... KEYWORD_N, AMOUNT_N)-------------------");
+        
+        dctPairs2.collect().forEach(tuple -> {
+        	System.out.println("KEYWORD: " + tuple._1().getTag() + " DATE: " + tuple._1().getDate() + " CITY: " + tuple._1().getCity());
+        	System.out.println("TOTAL_AMOUNT_OF_VISITORS : " + tuple._2.getAttendingCount());
+//        	Map<String, Integer> sortedMap = tuple._2.getWords().entrySet().stream()
+//                    .sorted(Map.Entry.comparingByValue(java.util.Comparator.reverseOrder())).limit(10)
+//                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
+//
+//            System.out.println("TOKEN_MAP(KEYWORD_1, AMOUNT_1... KEYWORD_10, AMOUNT_10)  : ");
+//            for (String str : sortedMap.keySet()) {
+//                System.out.print(str + " " + sortedMap.get(str) + " | ");
+//            }
+        });
         
         
 
