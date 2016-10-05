@@ -1,5 +1,6 @@
 package com.epam.bigdata.q3.task8;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 
@@ -200,7 +201,7 @@ public class SparkUniqueWords {
 	                            	eventEntity.setStartDate("2016-10-05");
 	                            }
 							 
-	                            if (!event.getDescription().isEmpty()) {
+	                            if (StringUtils.isNotEmpty(event.getDescription()) && StringUtils.isNotBlank(event.getDescription())) {
 	                                String[] words = event.getDescription().split(SPLIT);
 
 	                                for (String word : words) {
