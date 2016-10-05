@@ -14,7 +14,7 @@ import com.restfb.Connection;
 import com.restfb.DefaultFacebookClient;
 import com.restfb.FacebookClient;
 import com.restfb.Parameter;
-
+import com.restfb.Version;
 import com.restfb.types.Event;
 import com.restfb.types.Location;
 import com.restfb.types.Place;
@@ -38,8 +38,9 @@ import org.apache.spark.sql.Row;
 
 public class SparkUniqueWords {
 	private static final String SPLIT = "\\s+";
-	private static final String TOKEN = "EAACEdEose0cBAN9XZBgFmXOG8xyxYUCndQ9KZCZAZAycNMQCZC9VjaOZCuBC0s0cqsvCdsKhy83TB1YHVy5D59JjoJdgQZA6DlpVWtNa8its7orbOxDHTfIcf7wfYF1euErxq8bbXkYJtw3BNYg1hflELyN7P66zu6D9sVV7qOtztGWKaEGlIA5";
 	private static final SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-mm-dd");
+	private static final String TOKEN = "EAACEdEose0cBAN9XZBgFmXOG8xyxYUCndQ9KZCZAZAycNMQCZC9VjaOZCuBC0s0cqsvCdsKhy83TB1YHVy5D59JjoJdgQZA6DlpVWtNa8its7orbOxDHTfIcf7wfYF1euErxq8bbXkYJtw3BNYg1hflELyN7P66zu6D9sVV7qOtztGWKaEGlIA5";
+	private static final FacebookClient facebookClient = new DefaultFacebookClient(TOKEN, Version.VERSION_2_5);
     
     
 	public static void main(String[] args) throws Exception {
