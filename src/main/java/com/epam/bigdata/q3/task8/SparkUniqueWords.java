@@ -218,7 +218,7 @@ public class SparkUniqueWords {
 					 }
 				}
                 TagEventsEntity tagEvents = new TagEventsEntity(tag, eventsByTag);
-                System.out.println("TAG: " + tag + ", First event by tag: " + eventsByTag.get(0).getName() + " , amount of events: " + eventsByTag.size());
+                System.out.println("TAG: " + tag +  " , amount of events: " + eventsByTag.size());
 				return tagEvents;
 			}      	
 		});
