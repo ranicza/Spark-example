@@ -19,19 +19,6 @@ public class ULogEntity implements Serializable{
 	public ULogEntity() {
 	}
 
-//	public ULogEntity(long iDUserTags, long iDCity, String timestampDate) {
-//		super();
-//		IDUserTags = iDUserTags;
-//		IDCity = iDCity;
-//		this.timestampDate = timestampDate;
-//	}
-
-	
-	
-	public long getIDUserTags() {
-		return IDUserTags;
-	}
-
 	public ULogEntity(long iDUserTags, long iDCity, String timestampDate, List<String> tags, String city) {
 		super();
 		IDUserTags = iDUserTags;
@@ -39,6 +26,10 @@ public class ULogEntity implements Serializable{
 		this.timestampDate = timestampDate;
 		this.tags = tags;
 		this.city = city;
+	}
+	
+	public long getIDUserTags() {
+		return IDUserTags;
 	}
 
 	public void setIDUserTags(long iDUserTags) {

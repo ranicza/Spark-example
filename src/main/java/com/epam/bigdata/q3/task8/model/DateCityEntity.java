@@ -3,15 +3,14 @@ package com.epam.bigdata.q3.task8.model;
 import java.io.Serializable;
 
 public class DateCityEntity implements Serializable{
-	
-    private String date;
+
+	private String date;
+    
     private String city;
     
-    
-//	public DateCity() {
-//		super();
-//	}
-
+	public DateCityEntity() {
+		super();
+	}
 
 	public DateCityEntity(String date, String city) {
 		super();
