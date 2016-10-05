@@ -201,6 +201,7 @@ public class SparkUniqueWords {
 	                            	eventEntity.setStartDate("2016-10-05");
 	                            }
 							 
+	                            /*
 	                            if (StringUtils.isNotEmpty(event.getDescription()) && StringUtils.isNotBlank(event.getDescription())) {
 	                                String[] words = event.getDescription().split(SPLIT);
 
@@ -213,6 +214,7 @@ public class SparkUniqueWords {
 	                                    }
 	                                }
 	                            }
+	                            */
 	                            eventsByTag.add(eventEntity);							 
 						 }
 					 }
@@ -240,7 +242,7 @@ public class SparkUniqueWords {
         JavaPairRDD<DateCityTagEntity, EventEntity> dctPairs2 = dateCityTagsByPairs.reduceByKey((event1, event2) -> {
         	EventEntity eventEntity = new EventEntity();
         	eventEntity.setAttendingCount(event1.getAttendingCount() + event2.getAttendingCount());
-			
+			/*
 			Map<String, Integer> words1 = event1.getWords();
 			Map<String, Integer> words2 = event2.getWords();
 			for (String word : words2.keySet()) {
@@ -253,7 +255,8 @@ public class SparkUniqueWords {
 					 words1.put(word, num1 + num2);
 				}
 			}
-			eventEntity.setWords(words1);      	
+			eventEntity.setWords(words1);    
+			*/  	
         	return eventEntity;
         });
         
