@@ -1,8 +1,8 @@
-package com.epam.bigdata.q3.task8;
+package com.epam.bigdata.q3.task8.model;
 
 import java.io.Serializable;
 
-public class DateCity implements Serializable{
+public class DateCityEntity implements Serializable{
 	
     private String date;
     private String city;
@@ -13,7 +13,7 @@ public class DateCity implements Serializable{
 //	}
 
 
-	public DateCity(String date, String city) {
+	public DateCityEntity(String date, String city) {
 		super();
 		this.date = date;
 		this.city = city;
@@ -58,7 +58,7 @@ public class DateCity implements Serializable{
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		DateCity other = (DateCity) obj;
+		DateCityEntity other = (DateCityEntity) obj;
 		if (city == null) {
 			if (other.city != null)
 				return false;

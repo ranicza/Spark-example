@@ -1,4 +1,4 @@
-package com.epam.bigdata.q3.task8;
+package com.epam.bigdata.q3.task8.model;
 
 import java.io.Serializable;
 import java.util.Date;
