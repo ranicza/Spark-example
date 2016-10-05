@@ -181,8 +181,6 @@ public class SparkUniqueWords {
 
       //---------------------------------FACEBOOK API PART---------------------------------------------------
         
-       FacebookClient facebookClient = new DefaultFacebookClient(TOKEN);
-        
        /*
         *  Get a sequence of all unique tags from the file.
         *  flatMap(FlatMapFunction<T,U> f) 
