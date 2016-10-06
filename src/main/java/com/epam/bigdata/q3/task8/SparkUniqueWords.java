@@ -18,10 +18,7 @@ import com.restfb.FacebookClient;
 import com.restfb.Parameter;
 import com.restfb.Version;
 import com.restfb.types.Event;
-import com.restfb.types.Location;
-import com.restfb.types.Place;
 
-import org.apache.spark.api.java.function.FlatMapFunction;
 import org.apache.spark.api.java.function.Function;
 import org.apache.spark.api.java.function.Function2;
 import org.apache.spark.api.java.function.PairFunction;
@@ -37,9 +34,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-import static java.util.stream.Collectors.counting;
-import static java.util.stream.Collectors.groupingBy;
-import static java.util.stream.Collectors.toList;
 
 import scala.Tuple2;
 import org.apache.spark.sql.Row;
@@ -47,11 +41,13 @@ import org.apache.spark.sql.Row;
 public class SparkUniqueWords {
 	private static final String SPLIT = "\\s+";
 	private static final SimpleDateFormat dateFormatter = new SimpleDateFormat("mm.dd.yyyy");
+	
 	private static final String TOKEN = "EAACEdEose0cBAOrGDDOmVisKgwTZA0rpAs9djoYHpBo9wzpteoEJ4yHGYZBWkZA1l5TlHtuNyYSUbzKS8WpkMSeEBjI7RZCytGqcHq5PmcYN8x8rApXYwskzAB30RIPu0QUZBagVdTJ3bRpdsopyGOwkF8GUeMFJbho3GHUMZAHCXiLYnARaLp";
 	private static final FacebookClient facebookClient = new DefaultFacebookClient(TOKEN, Version.VERSION_2_5);
     
     
 	public static void main(String[] args) throws Exception {
+		
 		String logFile = args[0];
 	    String tagFile = args[1];
 	    String cityFile = args[2];
@@ -65,6 +61,8 @@ public class SparkUniqueWords {
 	    	      .builder()
 	    	      .appName("SparkUniqueWords")
 	    	      .getOrCreate();
+	    
+	    //========================== 	1. Collect all unique keyword per day per location (city)   ===============================
 
 	    /*
 	     * --------------------GET TAG_ID + LIST OF TAGS-------------------------
@@ -72,8 +70,9 @@ public class SparkUniqueWords {
         Dataset<String> data = spark.read().textFile(tagFile);
         String header = data.first();
         
-	    //reads file as a collection of lines skipping header from the file.
-        JavaRDD<String> tagsRdd =data.filter(x -> !x.equals(header)).javaRDD();
+	    // Reads file as a collection of lines skipping header from the file.
+        JavaRDD<String> tagsRdd = data.filter(x -> !x.equals(header)).javaRDD();
+        
         /*
          *  In Java, key-value pairs are represented using the scala.Tuple2 class
          *  from the Scala standard library. 
@@ -86,6 +85,7 @@ public class SparkUniqueWords {
                 return new Tuple2<Long, List<String>>(Long.parseLong(parts[0]), Arrays.asList(parts[1].split(",")));
             }
         });
+        
         Map<Long, List<String>> tagsMap = tagsPairs.collectAsMap();
         
         
@@ -102,6 +102,7 @@ public class SparkUniqueWords {
                 return new Tuple2<Integer, String>(Integer.parseInt(parts[0]), parts[1]);
             }
         });
+        
         Map<Integer, String> citiesMap = citiesIdsPairs.collectAsMap();
         
         /*
@@ -234,10 +235,7 @@ public class SparkUniqueWords {
         	}
         );
         
-        /*
-         * reduceByKey(Function2<V,V,V> func)
-         * 
-         */        
+       
         JavaPairRDD<DateCityTagEntity, EventEntity> dctPairs = dateCityTagsByPairs.reduceByKey((event1, event2) -> {
         	EventEntity eventEntity = new EventEntity();        	
         	eventEntity.setAttendingCount(event1.getAttendingCount() + event2.getAttendingCount());
@@ -246,28 +244,28 @@ public class SparkUniqueWords {
         	eventEntity.setCountedWords(map);	
         	return eventEntity;
         });
-        
 
-
-    	
         System.out.println("--------------------KEYWORD DAY CITY TOTAL_AMOUNT_OF_VISITORS TOKEN_MAP(KEYWORD_1, AMOUNT_1... KEYWORD_N, AMOUNT_N)-------------------");
         
         dctPairs.collect().forEach(tuple -> {
         	System.out.println("KEYWORD: " + tuple._1().getTag() + " DATE: " + tuple._1().getDate() + " CITY: " + tuple._1().getCity());
         	System.out.println("TOTAL_AMOUNT_OF_VISITORS : " + tuple._2.getAttendingCount());
         	
-        	Map<String, Integer> sortedWords = tuple._2.getCountedWords().entrySet().stream()
+        	Map<String, Integer> outputWords = tuple._2.getCountedWords().entrySet().stream()
                     .sorted(Map.Entry.comparingByValue(java.util.Comparator.reverseOrder())).limit(10)
                     .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
 
             System.out.println("TOKEN_MAP(KEYWORD_1, AMOUNT_1... KEYWORD_10, AMOUNT_10): ");
-            for (String str : sortedWords.keySet()) {
-                System.out.print(str + "(" + sortedWords.get(str) + ")  ");
+            for (String str : outputWords.keySet()) {
+                System.out.print(str + "(" + outputWords.get(str) + ")  ");
             }
         });
         
         
-//        Dataset<Row> result = spark.createDataFrame(dctPairs, DateCityTagEntity.class);
+//      Encoder<DateCityTagEntity> encoder = Encoders.bean(DateCityTagEntity.class);
+//      Dataset<ULogEntity> df = spark.createDataset(logsRdd.rdd(), encoder);
+//        
+//        Dataset<Row> result = spark.createDataFrame(dctPairs, DateCityTagEntity.class,);
 //        result.createOrReplaceTempView("result");
 //        result.show();
 //        result.limit(15).show();
