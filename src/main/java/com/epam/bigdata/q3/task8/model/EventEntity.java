@@ -1,6 +1,7 @@
 package com.epam.bigdata.q3.task8.model;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,7 +25,7 @@ public class EventEntity implements Serializable{
 	
     private Map<String, Integer> countedWords = new HashMap<String, Integer>();
 	
-	private List<String> wordsFromDescription; 
+	private List<String> wordsFromDescription = new ArrayList<String>(); 
 	
 	public EventEntity() {
 		super();
