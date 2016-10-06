@@ -42,7 +42,7 @@ public class SparkUniqueWords {
 	private static final String SPLIT = "\\s+";
 	private static final SimpleDateFormat dateFormatter = new SimpleDateFormat("mm.dd.yyyy");
 	
-	private static final String TOKEN = "EAACEdEose0cBAOrGDDOmVisKgwTZA0rpAs9djoYHpBo9wzpteoEJ4yHGYZBWkZA1l5TlHtuNyYSUbzKS8WpkMSeEBjI7RZCytGqcHq5PmcYN8x8rApXYwskzAB30RIPu0QUZBagVdTJ3bRpdsopyGOwkF8GUeMFJbho3GHUMZAHCXiLYnARaLp";
+	private static final String TOKEN = "EAACEdEose0cBAAwZBg0G60m6Wb9KtC45uwePtbKWK97aDE7BmUxEs0WZCNKe4dIHOShc7mssretzCwLoWwQPYZBOYa8DtmcfLdm5QDw6xf05mbOO8MpPlbn8T7H4VJ8JAocKHIJRDrn6AWoUB7Gm0VtW8BZC2kOfDt1rL9cO2V4Itq80nlsG";
 	private static final FacebookClient facebookClient = new DefaultFacebookClient(TOKEN, Version.VERSION_2_5);
     
     
@@ -62,10 +62,10 @@ public class SparkUniqueWords {
 	    	      .appName("SparkUniqueWords")
 	    	      .getOrCreate();
 	    
-	    //========================== 	1. Collect all unique keyword per day per location (city)   ===============================
+	    //================ 	1. Collect all unique keyword per day per location (city)   ===========================
 
 	    /*
-	     * --------------------GET TAG_ID + LIST OF TAGS-------------------------
+	     * -------------------- GET TAG_ID + LIST OF TAGS -------------------------
 	     */
         Dataset<String> data = spark.read().textFile(tagFile);
         String header = data.first();
@@ -90,7 +90,7 @@ public class SparkUniqueWords {
         
         
         /*
-         * -----------------------GET CITIES--------------------------------------
+         * ----------------------- GET CITIES --------------------------------------
          */
         Dataset<String> cityData = spark.read().textFile(cityFile);
         String cityHeader = cityData.first();       
@@ -106,7 +106,7 @@ public class SparkUniqueWords {
         Map<Integer, String> citiesMap = citiesIdsPairs.collectAsMap();
         
         /*
-         * -----------------------GET LOGS + TAGS + CITIES----------------------------
+         * ----------------------- GET LOGS + TAGS + CITIES + DATE ------------------------
          * map(Function<T,R> f) 
          */
         JavaRDD<ULogEntity> logsRdd = spark.read().textFile(logFile).javaRDD().map(new Function<String, ULogEntity>() {
@@ -126,12 +126,11 @@ public class SparkUniqueWords {
                
         Dataset<Row> df = spark.createDataFrame(logsRdd, ULogEntity.class);
         df.createOrReplaceTempView("logs");
-        df.show();
         df.limit(15).show();
 
 
         /*
-         *  Date/City pre pairs
+         *  Date/City by pairs
          *  RDDs of key-value pairs are represented by the JavaPairRDD class. 
          *  mapToPair(PairFunction<T,K2,V2> f) 
          */
@@ -169,7 +168,7 @@ public class SparkUniqueWords {
             }
         }
 
-      //---------------------------------FACEBOOK API PART---------------------------------------------------
+      //===========================    2.  FACEBOOK API PART  ========================================================
         
        /*
         *  Get a sequence of all unique tags from the file.
