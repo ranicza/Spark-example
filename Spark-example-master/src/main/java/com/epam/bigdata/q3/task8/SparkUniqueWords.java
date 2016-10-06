@@ -211,47 +211,8 @@ public class SparkUniqueWords {
 				return tagEvents;     	
 		});
        
-//        JavaRDD<TagEventsEntity> tagsEventsRDD = uniqueTagsRdd.map(new Function<String, TagEventsEntity>() {
-//			@Override
-//			public TagEventsEntity call(String tag) throws Exception {
-//				Connection<Event> con = facebookClient.fetchConnection("search", Event.class, Parameter.with("q", tag), 
-//						Parameter.with("type", "event"), Parameter.with("fields", "id,attending_count,place,name,description,start_time"));
-//				
-//				List<EventEntity> eventsByTag = new ArrayList<EventEntity>();
-//				for (List<Event> events : con) {
-//					 for (Event event : events) {
-//						 if (event != null) {
-//							 EventEntity eventEntity = new EventEntity(event.getDescription(), event.getId(), event.getName(), event.getAttendingCount(), tag);
-//							 
-//							 if (event.getPlace() != null && event.getPlace().getLocation() != null && event.getPlace().getLocation().getCity() != null) {
-//								 eventEntity.setCity(event.getPlace().getLocation().getCity());
-//	                         } else {
-//	                        	 eventEntity.setCity("undefined");
-//	                         }
-//	                            if (event.getStartTime() != null) {
-//	                            	eventEntity.setStartDate(dateFormatter.format(event.getStartTime()).toString());
-//	                            } else {
-//	                            	eventEntity.setStartDate("2016-10-05");
-//	                            }
-//							 
-//	                            // Get words from event's description
-//	                            if (StringUtils.isNotBlank(event.getDescription()) && StringUtils.isNotEmpty(event.getDescription())) {
-//	                                String[] words = event.getDescription().split(SPLIT);	                                
-//	                                for (String word : words) {
-//	                                	eventEntity.getWordsFromDescription().add(word);
-//	                                }
-//	                            }
-//	                            eventsByTag.add(eventEntity);							 
-//						 }
-//					 }
-//				}
-//                TagEventsEntity tagEvents = new TagEventsEntity(tag, eventsByTag);
-//                System.out.println("TAG: " + tag +  " , amount of events: " + eventsByTag.size());
-//				return tagEvents;
-//			}      	
-//		});
-        
-        
+
+       // Get all events
         JavaRDD<EventEntity> allEventsRdd = tagsEventsRDD.flatMap(tagEvents ->
         	tagEvents.getEvents().iterator()
         );
@@ -264,15 +225,16 @@ public class SparkUniqueWords {
         
        
         JavaPairRDD<DateCityTagEntity, EventEntity> dctPairs = dateCityTagsByPairs.reduceByKey((event1, event2) -> {
-        	EventEntity eventEntity = new EventEntity();        	
+        	EventEntity eventEntity = new EventEntity();    
+        	// collect all the attendees  
         	eventEntity.setAttendingCount(event1.getAttendingCount() + event2.getAttendingCount());
-
+        	// word count of all descriptions
         	Map<String, Integer> map = getCountedWords(event1.getWordsFromDescription(), event2.getWordsFromDescription());
         	eventEntity.setCountedWords(map);	
         	return eventEntity;
         });
 
-        System.out.println("--------------------KEYWORD DAY CITY TOTAL_AMOUNT_OF_VISITORS TOKEN_MAP(KEYWORD_1, AMOUNT_1... KEYWORD_N, AMOUNT_N)-------------------");
+        System.out.println("---- KEYWORD DAY CITY TOTAL_AMOUNT_OF_VISITORS TOKEN_MAP(KEYWORD_1, AMOUNT_1... KEYWORD_N, AMOUNT_N) ----");
         
         dctPairs.collect().forEach(tuple -> {
         	System.out.println("KEYWORD: " + tuple._1().getTag() + " DATE: " + tuple._1().getDate() + " CITY: " + tuple._1().getCity());
@@ -289,20 +251,14 @@ public class SparkUniqueWords {
         });
         
         
-//      Encoder<DateCityTagEntity> encoder = Encoders.bean(DateCityTagEntity.class);
-//      Dataset<ULogEntity> df = spark.createDataset(logsRdd.rdd(), encoder);
-//        
-//        Dataset<Row> result = spark.createDataFrame(dctPairs, DateCityTagEntity.class,);
-//        result.createOrReplaceTempView("result");
-//        result.show();
-//        result.limit(15).show();
-        
         spark.stop();
 	  }
 
 	
 	
-	
+	/*
+	 * Return a map (word, count).
+	 */
 	private static Map<String, Integer> getCountedWords(List<String> words, List<String> words2) {
 		Map<String, Integer> occuranceWords = new HashMap<String, Integer>();
 		words.addAll(words2);
