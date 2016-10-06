@@ -62,7 +62,7 @@ public class SparkUniqueWords {
 	    	      .appName("SparkUniqueWords")
 	    	      .getOrCreate();
 	    
-	    //================ 	1. Collect all unique keyword per day per location (city)   ===========================
+	    //================ 	1. Collect all unique keyword per day per location (city)   ==========================
 
 	    /*
 	     * -------------------- GET TAG_ID + LIST OF TAGS -------------------------
