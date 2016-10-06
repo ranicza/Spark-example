@@ -42,7 +42,7 @@ import org.apache.spark.sql.Row;
 public class SparkUniqueWords {
 	private static final String SPLIT = "\\s+";
 	private static final SimpleDateFormat dateFormatter = new SimpleDateFormat("mm.dd.yyyy");
-	private static final String TOKEN = "EAACEdEose0cBAN9XZBgFmXOG8xyxYUCndQ9KZCZAZAycNMQCZC9VjaOZCuBC0s0cqsvCdsKhy83TB1YHVy5D59JjoJdgQZA6DlpVWtNa8its7orbOxDHTfIcf7wfYF1euErxq8bbXkYJtw3BNYg1hflELyN7P66zu6D9sVV7qOtztGWKaEGlIA5";
+	private static final String TOKEN = "EAACEdEose0cBAOrGDDOmVisKgwTZA0rpAs9djoYHpBo9wzpteoEJ4yHGYZBWkZA1l5TlHtuNyYSUbzKS8WpkMSeEBjI7RZCytGqcHq5PmcYN8x8rApXYwskzAB30RIPu0QUZBagVdTJ3bRpdsopyGOwkF8GUeMFJbho3GHUMZAHCXiLYnARaLp";
 	private static final FacebookClient facebookClient = new DefaultFacebookClient(TOKEN, Version.VERSION_2_5);
     
     
