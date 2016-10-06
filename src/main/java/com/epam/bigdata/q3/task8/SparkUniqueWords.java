@@ -207,28 +207,12 @@ public class SparkUniqueWords {
 	                            }
 							 
 	                            // Get words from event's description
-	                            System.out.println(event.getDescription());
 	                            if (StringUtils.isNotBlank(event.getDescription()) && StringUtils.isNotEmpty(event.getDescription())) {
 	                                String[] words = event.getDescription().split(SPLIT);	                                
 	                                for (String word : words) {
 	                                	eventEntity.getWordsFromDescription().add(word);
 	                                }
 	                            }
-
-	                            /*
-	                            if (StringUtils.isNotEmpty(event.getDescription()) && StringUtils.isNotBlank(event.getDescription())) {
-	                                String[] words = event.getDescription().split(SPLIT);
-
-	                                for (String word : words) {
-	                                    Integer n = eventEntity.getWords().get(word);
-	                                    if (n == null) {
-	                                        eventEntity.getWords().put(word, 1);
-	                                    } else {
-	                                        eventEntity.getWords().put(word, n + 1);
-	                                    }
-	                                }
-	                            }
-	                            */
 	                            eventsByTag.add(eventEntity);							 
 						 }
 					 }
@@ -278,12 +262,16 @@ public class SparkUniqueWords {
 
             System.out.println("TOKEN_MAP(KEYWORD_1, AMOUNT_1... KEYWORD_10, AMOUNT_10): ");
             for (String str : sortedWords.keySet()) {
-                System.out.print(str + " " + sortedWords.get(str) + ". ");
+                System.out.print(str + "(" + sortedWords.get(str) + ")  ");
             }
         });
         
         
-
+//        Dataset<Row> result = spark.createDataFrame(dctPairs, DateCityTagEntity.class);
+//        result.createOrReplaceTempView("result");
+//        result.show();
+//        result.limit(15).show();
+        
         spark.stop();
 	  }
 
