@@ -29,12 +29,17 @@ import org.apache.spark.api.java.function.PairFunction;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import static java.util.stream.Collectors.counting;
+import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Collectors.toList;
 
 import scala.Tuple2;
 import org.apache.spark.sql.Row;
@@ -203,21 +208,13 @@ public class SparkUniqueWords {
 							 
 	                            // Get words from event's description
 	                            System.out.println(event.getDescription());
-	                            if (!event.getDescription().isEmpty() || event.getDescription()== null) {
-	                                String[] words = event.getDescription().split(SPLIT);
-
+	                            if (StringUtils.isNotBlank(event.getDescription()) && StringUtils.isNotEmpty(event.getDescription())) {
+	                                String[] words = event.getDescription().split(SPLIT);	                                
 	                                for (String word : words) {
-	                                    Integer n = eventEntity.getWords().get(word);
-	                                    if (n == null) {
-	                                        eventEntity.getWords().put(word, 1);
-	                                    } else {
-	                                        eventEntity.getWords().put(word, n + 1);
-	                                    }
+	                                	eventEntity.getWordsFromDescription().add(word);
 	                                }
 	                            }
-	                            
-	                            
-	                            
+
 	                            /*
 	                            if (StringUtils.isNotEmpty(event.getDescription()) && StringUtils.isNotBlank(event.getDescription())) {
 	                                String[] words = event.getDescription().split(SPLIT);
@@ -255,42 +252,34 @@ public class SparkUniqueWords {
         
         /*
          * reduceByKey(Function2<V,V,V> func)
+         * 
          */        
-        JavaPairRDD<DateCityTagEntity, EventEntity> dctPairs2 = dateCityTagsByPairs.reduceByKey((event1, event2) -> {
-        	EventEntity eventEntity = new EventEntity();
+        JavaPairRDD<DateCityTagEntity, EventEntity> dctPairs = dateCityTagsByPairs.reduceByKey((event1, event2) -> {
+        	EventEntity eventEntity = new EventEntity();        	
         	eventEntity.setAttendingCount(event1.getAttendingCount() + event2.getAttendingCount());
-			/*
-			Map<String, Integer> words1 = event1.getWords();
-			Map<String, Integer> words2 = event2.getWords();
-			for (String word : words2.keySet()) {
-				Integer num1 = words1.get(word);
-				Integer num2 = words2.get(word);			
-				//num1==null ? words1.put(word, num2) : words1.put(word, num1 + num2);				
-				if (num1 == null ) {
-					words1.put(word, num2);
-				} else {
-					 words1.put(word, num1 + num2);
-				}
-			}
-			eventEntity.setWords(words1);    
-			*/  	
+
+        	Map<String, Integer> map = getCountedWords(event1.getWordsFromDescription(), event2.getWordsFromDescription());
+        	eventEntity.setCountedWords(map);	
         	return eventEntity;
         });
         
-        
+
+
+    	
         System.out.println("--------------------KEYWORD DAY CITY TOTAL_AMOUNT_OF_VISITORS TOKEN_MAP(KEYWORD_1, AMOUNT_1... KEYWORD_N, AMOUNT_N)-------------------");
         
-        dctPairs2.collect().forEach(tuple -> {
+        dctPairs.collect().forEach(tuple -> {
         	System.out.println("KEYWORD: " + tuple._1().getTag() + " DATE: " + tuple._1().getDate() + " CITY: " + tuple._1().getCity());
         	System.out.println("TOTAL_AMOUNT_OF_VISITORS : " + tuple._2.getAttendingCount());
-//        	Map<String, Integer> sortedMap = tuple._2.getWords().entrySet().stream()
-//                    .sorted(Map.Entry.comparingByValue(java.util.Comparator.reverseOrder())).limit(10)
-//                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
-//
-//            System.out.println("TOKEN_MAP(KEYWORD_1, AMOUNT_1... KEYWORD_10, AMOUNT_10)  : ");
-//            for (String str : sortedMap.keySet()) {
-//                System.out.print(str + " " + sortedMap.get(str) + " | ");
-//            }
+        	
+        	Map<String, Integer> sortedWords = tuple._2.getCountedWords().entrySet().stream()
+                    .sorted(Map.Entry.comparingByValue(java.util.Comparator.reverseOrder())).limit(10)
+                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
+
+            System.out.println("TOKEN_MAP(KEYWORD_1, AMOUNT_1... KEYWORD_10, AMOUNT_10): ");
+            for (String str : sortedWords.keySet()) {
+                System.out.print(str + " " + sortedWords.get(str) + ". ");
+            }
         });
         
         
@@ -298,4 +287,16 @@ public class SparkUniqueWords {
         spark.stop();
 	  }
 
+	
+	
+	
+	private static Map<String, Integer> getCountedWords(List<String> words, List<String> words2) {
+		Map<String, Integer> occuranceWords = new HashMap<String, Integer>();
+		words.addAll(words2);
+		for (String word : words) {
+    		int occurrences = Collections.frequency(words, word);
+    		occuranceWords.put(word, occurrences);
+		}
+		return occuranceWords;
+	}
 }

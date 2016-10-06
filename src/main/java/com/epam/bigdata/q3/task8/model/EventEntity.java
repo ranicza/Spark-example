@@ -2,7 +2,9 @@ package com.epam.bigdata.q3.task8.model;
 
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class EventEntity implements Serializable{
 
@@ -20,7 +22,9 @@ public class EventEntity implements Serializable{
 
 	private String tag;
 	
-    private Map<String, Integer> words = new HashMap<String, Integer>();
+    private Map<String, Integer> countedWords = new HashMap<String, Integer>();
+	
+	private List<String> wordsFromDescription; 
 	
 	public EventEntity() {
 		super();
@@ -91,17 +95,21 @@ public class EventEntity implements Serializable{
 		this.attendingCount = attendingCount;
 	}
 
-	public Map<String, Integer> getWords() {
-		return words;
+	public List<String> getWordsFromDescription() {
+		return wordsFromDescription;
 	}
 
-	public void setWords(Map<String, Integer> words) {
-		this.words = words;
+	public void setWordsFromDescription(List<String> wordsFromDescription) {
+		this.wordsFromDescription = wordsFromDescription;
 	}
 
+	public Map<String, Integer> getCountedWords() {
+		return countedWords;
+	}
 
-	
+	public void setCountedWords(Map<String, Integer> countedWords) {
+		this.countedWords = countedWords;
+	}
 
-	
 
 }
