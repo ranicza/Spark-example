@@ -79,11 +79,9 @@ public class SparkUniqueWords {
          *  RDDs of key-value pairs are represented by the JavaPairRDD class. 
          *  mapToPair(PairFunction<T,K2,V2> f) 
          */
-        JavaPairRDD<Long, List<String>> tagsPairs = tagsRdd.mapToPair(new PairFunction<String, Long, List<String>>() {
-            public Tuple2<Long, List<String>> call(String line) {
+        JavaPairRDD<Long, List<String>> tagsPairs = tagsRdd.mapToPair(line -> {
                 String[] parts = line.split(SPLIT);             
                 return new Tuple2<Long, List<String>>(Long.parseLong(parts[0]), Arrays.asList(parts[1].split(",")));
-            }
         });
         
         Map<Long, List<String>> tagsMap = tagsPairs.collectAsMap();
@@ -96,11 +94,9 @@ public class SparkUniqueWords {
         String cityHeader = cityData.first();       
         JavaRDD<String> citiesRDD = cityData.filter(x -> !x.equals(cityHeader)).javaRDD();
 
-        JavaPairRDD<Integer, String> citiesIdsPairs = citiesRDD.mapToPair(new PairFunction<String, Integer, String>() {
-            public Tuple2<Integer, String> call(String line) {
+        JavaPairRDD<Integer, String> citiesIdsPairs = citiesRDD.mapToPair(line -> {
                 String[] parts = line.split(SPLIT);
                 return new Tuple2<Integer, String>(Integer.parseInt(parts[0]), parts[1]);
-            }
         });
         
         Map<Integer, String> citiesMap = citiesIdsPairs.collectAsMap();
@@ -109,21 +105,14 @@ public class SparkUniqueWords {
          * ----------------------- GET LOGS + TAGS + CITIES + DATE ------------------------
          * map(Function<T,R> f) 
          */
-        JavaRDD<ULogEntity> logsRdd = spark.read().textFile(logFile).javaRDD().map(new Function<String, ULogEntity>() {
-            @Override
-            public ULogEntity call(String line) throws Exception {                
+        JavaRDD<ULogEntity> logsRdd = spark.read().textFile(logFile).javaRDD().map(line -> {              
                 String[] parts = line.split(SPLIT);             
                 List<String> tags = tagsMap.get(Long.parseLong(parts[parts.length-2]));
                 String city = citiesMap.get(Long.parseLong(parts[parts.length-15]));
                 String date = parts[1].substring(0,8);             
                 return new ULogEntity(Long.parseLong(parts[parts.length-2]), Long.parseLong(parts[parts.length-15]), date, tags, city);
-            }
         });
-       
 
-//        Encoder<ULogEntity> encoder = Encoders.bean(ULogEntity.class);
-//        Dataset<ULogEntity> df = spark.createDataset(logsRdd.rdd(), encoder);
-               
         Dataset<Row> df = spark.createDataFrame(logsRdd, ULogEntity.class);
         df.createOrReplaceTempView("logs");
         df.limit(15).show();
@@ -134,13 +123,10 @@ public class SparkUniqueWords {
          *  RDDs of key-value pairs are represented by the JavaPairRDD class. 
          *  mapToPair(PairFunction<T,K2,V2> f) 
          */
-        JavaPairRDD<DateCityEntity, Set<String>> dateCityTags = logsRdd.mapToPair(new PairFunction<ULogEntity, DateCityEntity, Set<String>>() {
-            @Override
-            public Tuple2<DateCityEntity, Set<String>> call(ULogEntity entity) {
-                DateCityEntity dc = new DateCityEntity(entity.getTimestampDate(), entity.getCity());
-                return new Tuple2<DateCityEntity, Set<String>>(dc, new HashSet<String>(entity.getTags()));
-            }
-        });
+        JavaPairRDD<DateCityEntity, Set<String>> dateCityTags = logsRdd.mapToPair(log-> {
+       	 DateCityEntity dc = new DateCityEntity(log.getTimestampDate(), log.getCity());
+            return new Tuple2<DateCityEntity, Set<String>>(dc, new HashSet<String>(log.getTags()));
+       });
 
         /*
          * 	reduceByKey(Function2<V,V,V> func)
@@ -149,18 +135,23 @@ public class SparkUniqueWords {
 		 *  results to a reducer, similarly to a "combiner" in MapReduce.
 		 *  Output will be hash-partitioned with the existing partitioner/ parallelism level.
          */
-        JavaPairRDD<DateCityEntity, Set<String>> dateCityTagsPairs = dateCityTags.reduceByKey(new Function2<Set<String>, Set<String>, Set<String>>() {
-            @Override
-            public Set<String> call(Set<String> set1, Set<String> set2) {
+        JavaPairRDD<DateCityEntity, Set<String>> dateCityTagsPairs = dateCityTags.reduceByKey((set1, set2) -> {
                 set1.addAll(set2);
                 return set1;
-            }
         });
+        
+//        JavaPairRDD<DateCityEntity, Set<String>> dateCityTagsPairs = dateCityTags.reduceByKey(new Function2<Set<String>, Set<String>, Set<String>>() {
+//            @Override
+//            public Set<String> call(Set<String> set1, Set<String> set2) {
+//                set1.addAll(set2);
+//                return set1;
+//            }
+//        });
 
         
         System.out.println("-----------------------UNIQUE KEYWORDS PER DATE/CITY----------------------------");
         for (Tuple2<DateCityEntity, Set<String>> tuple : dateCityTagsPairs.collect()) {
-            System.out.println("CITY : " + tuple._1().getCity() + " DATE: " + tuple._1().getDate() + " TAGS: ");
+            System.out.println("CITY: " + tuple._1().getCity() + " DATE: " + tuple._1().getDate() + " TAGS: ");
             if (tuple._2 != null) {
                 for (String tag : tuple._2()) {
                     System.out.print(tag + " ");
@@ -254,7 +245,7 @@ public class SparkUniqueWords {
                     .sorted(Map.Entry.comparingByValue(java.util.Comparator.reverseOrder())).limit(10)
                     .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
 
-            System.out.println("TOKEN_MAP(KEYWORD_1, AMOUNT_1... KEYWORD_10, AMOUNT_10): ");
+            System.out.println("TOP 10 KEYWORDS: ");
             for (String str : outputWords.keySet()) {
                 System.out.print(str + "(" + outputWords.get(str) + ")  ");
             }
