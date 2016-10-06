@@ -41,7 +41,7 @@ import org.apache.spark.sql.Row;
 
 public class SparkUniqueWords {
 	private static final String SPLIT = "\\s+";
-	private static final SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-mm-dd");
+	private static final SimpleDateFormat dateFormatter = new SimpleDateFormat("mm.dd.yyyy");
 	private static final String TOKEN = "EAACEdEose0cBAN9XZBgFmXOG8xyxYUCndQ9KZCZAZAycNMQCZC9VjaOZCuBC0s0cqsvCdsKhy83TB1YHVy5D59JjoJdgQZA6DlpVWtNa8its7orbOxDHTfIcf7wfYF1euErxq8bbXkYJtw3BNYg1hflELyN7P66zu6D9sVV7qOtztGWKaEGlIA5";
 	private static final FacebookClient facebookClient = new DefaultFacebookClient(TOKEN, Version.VERSION_2_5);
     
@@ -152,9 +152,9 @@ public class SparkUniqueWords {
             }
         });
 
-        List<Tuple2<DateCityEntity, Set<String>>> result = dateCityTagsPairs.collect();
+        
         System.out.println("-----------------------UNIQUE KEYWORDS PER DATE/CITY----------------------------");
-        for (Tuple2<DateCityEntity, Set<String>> tuple : result) {
+        for (Tuple2<DateCityEntity, Set<String>> tuple : dateCityTagsPairs.collect()) {
             System.out.println("CITY : " + tuple._1().getCity() + " DATE: " + tuple._1().getDate() + " TAGS: ");
             if (tuple._2 != null) {
                 for (String tag : tuple._2()) {
@@ -201,6 +201,23 @@ public class SparkUniqueWords {
 	                            	eventEntity.setStartDate("2016-10-05");
 	                            }
 							 
+	                            // Get words from event's description
+	                            System.out.println(event.getDescription());
+	                            if (!event.getDescription().isEmpty() || event.getDescription()== null) {
+	                                String[] words = event.getDescription().split(SPLIT);
+
+	                                for (String word : words) {
+	                                    Integer n = eventEntity.getWords().get(word);
+	                                    if (n == null) {
+	                                        eventEntity.getWords().put(word, 1);
+	                                    } else {
+	                                        eventEntity.getWords().put(word, n + 1);
+	                                    }
+	                                }
+	                            }
+	                            
+	                            
+	                            
 	                            /*
 	                            if (StringUtils.isNotEmpty(event.getDescription()) && StringUtils.isNotBlank(event.getDescription())) {
 	                                String[] words = event.getDescription().split(SPLIT);
